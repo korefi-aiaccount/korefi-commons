@@ -11,6 +11,8 @@ from tenacity import (
     before_log,
     after_log,
 )
+from urllib.parse import urlparse
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -182,6 +184,26 @@ class S3Service:
         except ClientError as e:
             logger.error(f"Error finding file: {str(e)}")
             raise
+
+    def download_json(self, s3_uri: str):
+        try:
+            parsed_uri = urlparse(s3_uri)
+            file_key = parsed_uri.path.lstrip("/")
+            logger.info(f"Start download {self.bucket_name} {file_key}")
+            response = self.s3_client.get_object(Bucket=self.bucket_name, Key=file_key)
+            json_content = response["Body"].read().decode("utf-8")
+            json_data = json.loads(json_content)
+            return json_data
+        except ClientError as e:
+            error_code = e.response["Error"]["Code"]
+            error_message = e.response["Error"]["Message"]
+            logger.error(
+                f"S3 Client Error - Code: {error_code}, Message: {error_message}"
+            )
+            raise S3DownloadError(f"Failed to download from S3: {str(e)}")
+        except Exception as e:
+            logger.error(f"Unexpected error during S3 download: {str(e)}")
+            raise S3DownloadError(f"Unexpected error during download: {str(e)}")
 
 
 @contextmanager
