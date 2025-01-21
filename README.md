@@ -5,13 +5,13 @@ Common utilities for KoreFi projects.
 ## Installation
 
 ```bash
-pip install git+https://github.com/yourusername/korefi-commons.git
+pip install git+https://bitbucket.org/korefi/korefi-commons.git
 ```
 
 ## Usage
 
 ```python
-from korefi_commons.filepath_generator import FilePathGenerator
+from korefi_commons.s3 import S3Service
 ```
 
 ## Development
