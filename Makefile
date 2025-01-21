@@ -3,3 +3,7 @@ install:
 
 test: install
 	pytest tests/*
+
+ruff: install
+	pip install ruff
+	ruff check .
