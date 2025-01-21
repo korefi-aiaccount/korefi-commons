@@ -4,7 +4,10 @@ setup(
     name="korefi-commons",
     version="0.0.2",
     packages=find_packages(),
-    install_requires=[],
+    install_requires=[
+        "boto3",
+        "tenacity",
+    ],
     extras_require={
         "dev": ["pytest"],
     },
@@ -12,4 +15,4 @@ setup(
     author="KoreFi",
     description="Common utilities for KoreFi projects",
     python_requires=">=3.9",
-) 
+)

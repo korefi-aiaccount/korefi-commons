@@ -7,3 +7,4 @@ test: install
 ruff: install
 	pip install ruff
 	ruff check .
+	ruff format .
