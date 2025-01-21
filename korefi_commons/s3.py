@@ -132,6 +132,7 @@ class S3Service:
             S3DownloadError: If download fails after all retries
         """
         try:
+            file_key = self.find_actual_file_key(file_key)
             logger.info(f"Start download {self.bucket_name} {file_key} {local_path}")
             self.s3_client.download_file(self.bucket_name, file_key, local_path)
             logger.info(f"Successfully downloaded {file_key} to {local_path}")
@@ -159,6 +160,29 @@ class S3Service:
                 return False
             raise
 
+    def find_actual_file_key(self, prefix: str) -> str:
+        """
+        Find the actual file key when extension is unknown
+
+        Args:
+            prefix: Known part of the S3 key without extension (e.g., 'uuid1/bill/uuid2')
+
+        Returns:
+            str: Complete file key if found, None if not found
+        """
+        try:
+            response = self.s3_client.list_objects_v2(
+                Bucket=self.bucket_name, Prefix=prefix, MaxKeys=1
+            )
+
+            if "Contents" in response and response["Contents"]:
+                return response["Contents"][0]["Key"]
+            return None
+
+        except ClientError as e:
+            logger.error(f"Error finding file: {str(e)}")
+            raise
+
 
 @contextmanager
 def s3_service(config: dict):
@@ -169,3 +193,22 @@ def s3_service(config: dict):
     finally:
         # Cleanup if needed
         pass
+
+
+if __name__ == "__main__":
+    import os
+
+    # 6UrynZIaeZ1MZT9H4zpd+Ikmtp4GM4Nznz3ZI6ym
+    # AKIATQPD7DV5PIFTAY6O
+
+    config = {
+        "bucket_name": "korefi-document-storage-dev",
+        "aws_access_key_id": os.getenv("AWS_ACCESS_KEY_ID"),
+        "aws_secret_access_key": os.getenv("AWS_SECRET_ACCESS_KEY"),
+        "region_name": "us-east-1",
+    }
+    s3_service = S3Service(config)
+    s3_service.download_file(
+        "017b8654-050b-49f6-86fb-557ce98bbd23/bill/2020 06 01 - HubSpot Receipt - USD 140.00",
+        "test.pdf",
+    )
