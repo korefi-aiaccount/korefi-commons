@@ -2,6 +2,15 @@
 
 Common utilities for KoreFi projects.
 
+.
+├── analytics_models
+│   └── django
+│       ├── ap.py
+│       └── ar.py
+├── filepath_generator.py
+├── s3.py
+└── s3uri_generator.py
+
 ## Installation
 
 ```bash
