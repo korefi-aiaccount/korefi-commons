@@ -1,0 +1,11 @@
+[run]
+source = .
+omit =
+    */analytics_models/*
+    */tests/*
+    */__init__.py
+    */setup.py
+[report]
+exclude_lines =
+    pragma: no cover
+    def __str__
