@@ -14,7 +14,7 @@ pipelines:
           name: Test
           script:
             - echo "Running build and tests..."
-            - make test
+            - make coverage
           after-script:
             - if [ $BITBUCKET_EXIT_CODE -ne 0 ]; then echo "Build and Test failed. PR will be declined."; exit 1; fi
 
@@ -25,3 +25,8 @@ pipelines:
           script:
             - chmod +x semver.sh
             - ./semver.sh
+      - step:
+          name: Test
+          script:
+            - echo "Running build and tests..."
+            - make coverage

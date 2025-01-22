@@ -9,7 +9,8 @@ setup(
         "tenacity",
     ],
     extras_require={
-        "dev": ["pytest"],
+        "dev": ["pytest", "django>=4.0"],
+        "django": ["django>=4.0"],
     },
     setup_requires=["setuptools>=42", "wheel"],
     author="KoreFi",
