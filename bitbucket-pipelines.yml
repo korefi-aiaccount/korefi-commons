@@ -14,6 +14,7 @@ pipelines:
           name: Test
           script:
             - echo "Running build and tests..."
+            - make install
             - make coverage
           after-script:
             - if [ $BITBUCKET_EXIT_CODE -ne 0 ]; then echo "Build and Test failed. PR will be declined."; exit 1; fi
@@ -29,4 +30,5 @@ pipelines:
           name: Test
           script:
             - echo "Running build and tests..."
+            - make install
             - make coverage
