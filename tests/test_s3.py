@@ -68,3 +68,15 @@ def test_check_file_exists(s3_service):
         {"Error": {"Code": "404", "Message": "Not Found"}}, "HeadObject"
     )
     assert s3_service.check_file_exists("test/nonexistent.pdf") is False
+    
+def test_upload_xml_success(s3_service):
+    xml_data = "<root><element>Test</element></root>"
+    file_key = "test/file.xml"
+ 
+    assert s3_service.upload_xml(xml_data, file_key) is True
+    s3_service.s3_client.put_object.assert_called_once_with(
+        Bucket="test-bucket",
+        Key=file_key,
+        Body=xml_data,
+        Metadata={"ContentType": "application/xml", "NumberOfRetries": "0"},
+    )
