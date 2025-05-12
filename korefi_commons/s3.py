@@ -204,6 +204,51 @@ class S3Service:
         except Exception as e:
             logger.error(f"Unexpected error during S3 download: {str(e)}")
             raise S3DownloadError(f"Unexpected error during download: {str(e)}")
+        
+    def upload_xml(self, data: str, file_key: str) -> bool:
+        """
+        Upload XML data to S3 with retry mechanism
+ 
+        Args:
+            data: XML data to upload (as a string)
+            file_key: S3 object key (path)
+ 
+        Returns:
+            bool: True if upload successful
+ 
+        Raises:
+            S3UploadError: If upload fails after all retries
+        """
+        try:
+            # Add metadata for tracking
+            metadata = {
+                "ContentType": "application/xml",
+                "NumberOfRetries": "0",
+            }
+ 
+            self.s3_client.put_object(
+                Bucket=self.bucket_name,
+                Key=file_key,
+                Body=data,
+                Metadata=metadata,
+            )
+ 
+            logger.info(
+                f"Successfully uploaded XML data to {self.bucket_name}/{file_key}"
+            )
+            return True
+ 
+        except ClientError as e:
+            error_code = e.response["Error"]["Code"]
+            error_message = e.response["Error"]["Message"]
+            logger.error(
+                f"S3 Client Error - Code: {error_code}, Message: {error_message}"
+            )
+            raise S3UploadError(f"Failed to upload to S3: {str(e)}")
+ 
+        except Exception as e:
+            logger.error(f"Unexpected error during S3 upload: {str(e)}")
+            raise S3UploadError(f"Unexpected error during upload: {str(e)}")
 
 
 @contextmanager
