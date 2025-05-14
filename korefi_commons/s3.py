@@ -205,6 +205,14 @@ class S3Service:
             logger.error(f"Unexpected error during S3 download: {str(e)}")
             raise S3DownloadError(f"Unexpected error during download: {str(e)}")
         
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=4, max=10),
+        retry=retry_if_exception_type((ClientError, ConnectionError)),
+        before=before_log(logger, logging.DEBUG),
+        after=after_log(logger, logging.DEBUG),
+        reraise=True,
+    )   
     def upload_xml(self, data: str, file_key: str) -> bool:
         """
         Upload XML data to S3 with retry mechanism
