@@ -90,3 +90,5 @@ htmlcov/
 # Misc
 .DS_Store
 
+# Local feature flag fixtures
+feature-flags.json

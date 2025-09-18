@@ -1,5 +1,5 @@
 install:
-	pip install -e ".[dev]"
+	uv pip install -e ".[dev]"
 
 test: install
 	pytest tests/*
@@ -10,6 +10,6 @@ ruff: install
 	ruff format .
 
 coverage:
-	pip install coverage
+	uv pip install coverage
 	coverage run -m pytest tests/*
 	coverage report
