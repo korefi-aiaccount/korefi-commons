@@ -69,7 +69,7 @@ class FeatureFlagService:
         self.ttl: int = DEFAULT_TTL_SECONDS
         self._token: Optional[str] = None
         self._cache: Dict[str, Any] = {}
-        self._last_refresh: float = 0.0
+        self._last_refresh: Optional[float] = None
 
         if local_path is not None:
             self._local_path = Path(local_path)
@@ -85,7 +85,7 @@ class FeatureFlagService:
         """Refresh the cached feature flags if the 45-second TTL has expired."""
 
         now = time.monotonic()
-        if now - self._last_refresh < self.ttl:
+        if self._last_refresh is not None and now - self._last_refresh < self.ttl:
             logger.debug(
                 "Feature flags refreshed within %s seconds, skipping refresh", self.ttl
             )
