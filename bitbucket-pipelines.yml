@@ -7,6 +7,7 @@ pipelines:
           name: Lint
           script:
             - echo "Running linter..."
+            - python -m pip install uv
             - make ruff
           after-script:
             - if [ $BITBUCKET_EXIT_CODE -ne 0 ]; then echo "Lint failed. PR will be declined."; exit 1; fi
@@ -14,6 +15,7 @@ pipelines:
           name: Test
           script:
             - echo "Running build and tests..."
+            - python -m pip install uv
             - make install
             - make coverage
           after-script:
@@ -30,5 +32,6 @@ pipelines:
           name: Test
           script:
             - echo "Running build and tests..."
+            - python -m pip install uv
             - make install
             - make coverage
