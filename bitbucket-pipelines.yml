@@ -8,6 +8,8 @@ pipelines:
           script:
             - echo "Running linter..."
             - python -m pip install uv
+            - uv venv
+            - . .venv/bin/activate
             - make ruff
           after-script:
             - if [ $BITBUCKET_EXIT_CODE -ne 0 ]; then echo "Lint failed. PR will be declined."; exit 1; fi
@@ -16,6 +18,8 @@ pipelines:
           script:
             - echo "Running build and tests..."
             - python -m pip install uv
+            - uv venv
+            - . .venv/bin/activate
             - make install
             - make coverage
           after-script:
@@ -33,5 +37,7 @@ pipelines:
           script:
             - echo "Running build and tests..."
             - python -m pip install uv
+            - uv venv
+            - . .venv/bin/activate
             - make install
             - make coverage
