@@ -1,5 +1,5 @@
 install:
-	pip install -e ".[dev]"
+	uv pip install -e ".[dev]"
 
 test: install
 	pytest tests/*
