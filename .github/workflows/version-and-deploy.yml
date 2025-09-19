@@ -6,6 +6,9 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: write    
+
 jobs:
   lint:
     if: github.event_name == 'pull_request'
@@ -44,12 +47,41 @@ jobs:
           make install
           make coverage
 
-  semver:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  increment-version:
+    if: >
+      (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main')
+      || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    name: Create SemVer Tag
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Make semver.sh executable
+      - name: Checkout merged commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha || github.sha }}
+          fetch-depth: 0
+          lfs: true
+          persist-credentials: true  # ✅ ensures GITHUB_TOKEN is used for push/tag
+
+      - name: Configure Git
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "noreply@github.com"
+
+      - name: Make semver script executable
         run: chmod +x semver.sh
-      - name: Run semver.sh
-        run: ./semver.sh
+
+      - name: Create and push version tag
+        run: |
+          git fetch --tags --force --prune
+          ./semver.sh
+
+      - name: Get the new tag
+        id: get_tag
+        run: |
+          NEW_TAG=$(git describe --tags --abbrev=0)
+          echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
+          echo "New tag created: $NEW_TAG"
+
+    outputs:
+      version: ${{ steps.get_tag.outputs.new_tag }}
+
