@@ -11,7 +11,9 @@ from korefi_commons.feature_flags import FeatureFlagService
 @pytest.fixture()
 def local_flags_file(tmp_path: Path) -> Path:
     file_path = tmp_path / "feature-flags.json"
-    file_path.write_text(json.dumps({"enabled": True, "missing": False}), encoding="utf-8")
+    file_path.write_text(
+        json.dumps({"enabled": True, "missing": False}), encoding="utf-8"
+    )
     return file_path
 
 
@@ -22,7 +24,9 @@ def test_local_json_happy_path(local_flags_file: Path) -> None:
     assert service.is_on("missing") is False
 
 
-def test_ttl_skips_repeated_reads(monkeypatch: pytest.MonkeyPatch, local_flags_file: Path) -> None:
+def test_ttl_skips_repeated_reads(
+    monkeypatch: pytest.MonkeyPatch, local_flags_file: Path
+) -> None:
     service = FeatureFlagService(local_path=str(local_flags_file))
 
     open_calls = 0
@@ -47,7 +51,9 @@ def test_missing_flag_returns_default(local_flags_file: Path) -> None:
     assert service.is_on("does-not-exist", default=True) is True
 
 
-def test_non_boolean_value_logs_warning(tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
+def test_non_boolean_value_logs_warning(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
     file_path = tmp_path / "feature-flags.json"
     file_path.write_text(json.dumps({"weird": "yes"}), encoding="utf-8")
     service = FeatureFlagService(local_path=str(file_path))
@@ -84,9 +90,10 @@ def test_appconfig_fetch_when_local_missing(
 
     fake_client = FakeAppConfigClient()
 
-    monkeypatch.setenv("KORE_FEATURE_FLAGS_APPLICATION_ID", "app")
-    monkeypatch.setenv("KORE_FEATURE_FLAGS_ENVIRONMENT_ID", "env")
-    monkeypatch.setenv("KORE_FEATURE_FLAGS_PROFILE_ID", "profile")
+    monkeypatch.setenv("APPCONFIG_APPLICATION_ID", "app")
+    monkeypatch.setenv("APPCONFIG_ENVIRONMENT_ID", "env")
+    monkeypatch.setenv("APPCONFIG_PROFILE_ID", "profile")
+
     def fake_boto3_client(service_name: str, region_name: str) -> FakeAppConfigClient:
         assert service_name == "appconfigdata"
         assert region_name == "ap-south-1"
