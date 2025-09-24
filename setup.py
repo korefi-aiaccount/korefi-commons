@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="korefi-commons",
-    version="0.3.1",
+    version="0.3.3",
     packages=find_packages(),
     install_requires=[
         "boto3",
