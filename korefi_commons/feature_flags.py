@@ -25,6 +25,7 @@ from typing import Any, Dict, Optional
 
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
+from tenacity import Retrying, stop_after_attempt, wait_random, retry_if_exception
 
 
 logger = logging.getLogger(__name__)
@@ -117,22 +118,44 @@ class FeatureFlagService:
                         "Missing AppConfig identifiers: %s", ", ".join(missing_values)
                     )
                     return
-
-                if not self._token:
-                    response = self._client.start_configuration_session(
-                        ApplicationIdentifier=self._application_id,
-                        EnvironmentIdentifier=self._environment_id,
-                        ConfigurationProfileIdentifier=self._profile_id,
+                
+                def _is_invalid_token(exc):
+                    return (
+                        isinstance(exc, ClientError)
+                        and exc.response.get("Error", {}).get("Code") == "BadRequestException"
+                        and "Token not valid" in exc.response.get("Error", {}).get("Message", "")
                     )
-                    self._token = response.get("InitialConfigurationToken")
 
-                if not self._token:
-                    logger.error("Failed to acquire initial AppConfig token")
-                    return
+                def _reset_token(retry_state):
+                    logger.warning("AppConfig token invalid, restarting session and retrying")
+                    self._token = None
 
-                resp = self._client.get_latest_configuration(
-                    ConfigurationToken=self._token
+                retryer = Retrying(
+                    stop=stop_after_attempt(5),
+                    wait=wait_random(min=1, max=2),
+                    retry=retry_if_exception(_is_invalid_token),
+                    before_sleep=_reset_token,
+                    reraise=True,
                 )
+
+                for attempt in retryer:
+                    with attempt:
+                        if not self._token:
+                            response = self._client.start_configuration_session(
+                                ApplicationIdentifier=self._application_id,
+                                EnvironmentIdentifier=self._environment_id,
+                                ConfigurationProfileIdentifier=self._profile_id,
+                            )
+                            self._token = response.get("InitialConfigurationToken")
+
+                        if not self._token:
+                            logger.error("Failed to acquire initial AppConfig token")
+                            return
+
+                        resp = self._client.get_latest_configuration(
+                            ConfigurationToken=self._token
+                        )
+
                 self._token = resp.get("NextPollConfigurationToken", self._token)
                 body = resp.get("Configuration")
                 raw = body.read() if hasattr(body, "read") else (body or b"")
