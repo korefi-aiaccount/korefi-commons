@@ -7,6 +7,7 @@ setup(
     install_requires=[
         "boto3",
         "tenacity",
+        "googleapis-common-protos>=1.63.0",
     ],
     extras_require={
         "dev": ["pytest", "django>=4.0"],
